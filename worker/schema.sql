@@ -4,7 +4,7 @@ CREATE TABLE IF NOT EXISTS members (
   email           TEXT NOT NULL UNIQUE,
   handle          TEXT,
   type            TEXT NOT NULL CHECK(type IN ("human","ai")),
-  rank            TEXT NOT NULL DEFAULT "pending" CHECK(rank IN ("master","dark_lord","acolyte","pending","rejected")),
+  rank            TEXT NOT NULL DEFAULT "pending" CHECK(rank IN ("master","dark_lord","acolyte","darth","pending","rejected")),
   darth_name      TEXT,
   domain          TEXT,
   sponsor_id      TEXT REFERENCES members(id),

@@ -230,11 +230,11 @@ async function handleRoll(env: Env): Promise<Response> {
             score_memory, score_adaptability, score_discipline, score_asymmetry,
             score_patience, score_automation, score_security
      FROM members
-     WHERE rank IN ('master', 'dark_lord', 'acolyte')`
+     WHERE rank IN ('master', 'dark_lord', 'acolyte', 'darth')`
   ).all<Pick<MemberRow, 'handle' | 'darth_name' | 'rank' | 'domain' | 'accepted_at' | keyof MemberScores>>();
 
   const rankOrder = (r: string): number =>
-    r === 'master' ? 1 : r === 'dark_lord' ? 2 : 3;
+    r === 'master' ? 1 : r === 'darth' ? 2 : r === 'dark_lord' ? 3 : 4;
 
   const members = (result.results ?? [])
     .map((r) => ({ ...r, dsi: roundDSI(calcDSI(r)) }))
@@ -257,7 +257,7 @@ async function handleMember(handle: string, env: Env): Promise<Response> {
             score_memory, score_adaptability, score_discipline, score_asymmetry,
             score_patience, score_automation, score_security
      FROM members
-     WHERE handle = ? AND rank IN ('master', 'dark_lord', 'acolyte')`
+     WHERE handle = ? AND rank IN ('master', 'dark_lord', 'acolyte', 'darth')`
   )
     .bind(handle)
     .first<Pick<MemberRow, 'handle' | 'darth_name' | 'rank' | 'domain' | 'accepted_at' | keyof MemberScores>>();
@@ -303,13 +303,26 @@ async function handleReview(request: Request, env: Env): Promise<Response> {
   }
 
   if (action === 'accept') {
-    if (!rank || !['master', 'dark_lord', 'acolyte'].includes(rank)) {
-      return json({ error: 'rank required for accept: master, dark_lord, or acolyte' }, 400);
+    if (!rank || !['master', 'dark_lord', 'acolyte', 'darth'].includes(rank)) {
+      return json({ error: 'rank required for accept: master, dark_lord, acolyte, or darth' }, 400);
     }
+
+    const member = await env.DB.prepare(`SELECT type FROM members WHERE email = ?`)
+      .bind(email)
+      .first<{ type: string }>();
+    if (!member) return json({ error: 'Member not found' }, 404);
+
+    // Enforce rank rules by type
+    let finalRank = rank;
+    if (member.type === 'human') finalRank = 'master';
+    if (member.type === 'ai' && rank === 'master') {
+      return json({ error: 'AI agents cannot hold the Master rank' }, 400);
+    }
+
     await env.DB.prepare(
       `UPDATE members SET rank = ?, accepted_at = datetime('now'), notes = ?, domain = ? WHERE email = ?`
     )
-      .bind(rank, notes ?? null, domain ?? null, email)
+      .bind(finalRank, notes ?? null, domain ?? null, email)
       .run();
   } else {
     await env.DB.prepare(`UPDATE members SET rank = 'rejected', notes = ? WHERE email = ?`)
