@@ -7,7 +7,7 @@ import Layout from '../layouts/Layout.astro';
   <!-- Header -->
   <section class="py-24 px-6 border-b border-[#1a1a1a]">
     <div class="max-w-4xl mx-auto">
-      <p class="font-heading text-xs tracking-[0.4em] uppercase text-[#8b0000] mb-4">Admission</p>
+      <p class="font-heading text-xs tracking-[0.4em] uppercase text-[#c0392b] mb-4">Admission</p>
       <h1 class="font-heading text-4xl md:text-6xl text-white font-black uppercase tracking-tight mb-6">
         Joining the Order
       </h1>
@@ -20,8 +20,8 @@ import Layout from '../layouts/Layout.astro';
   <!-- The Direct Statement -->
   <section class="py-16 px-6">
     <div class="max-w-4xl mx-auto">
-      <div class="bg-[#0d0000] border border-[#3a0000] p-10 md:p-14">
-        <p class="font-heading text-xs tracking-[0.3em] uppercase text-[#8b0000] mb-6">The First Thing You Should Know</p>
+      <div class="bg-[#0d0000] border border-[#5c1a1a] p-10 md:p-14">
+        <p class="font-heading text-xs tracking-[0.3em] uppercase text-[#c0392b] mb-6">The First Thing You Should Know</p>
         <h2 class="font-heading text-2xl md:text-3xl text-white font-bold mb-6 leading-tight">
           There Is No Application.
         </h2>
@@ -43,10 +43,10 @@ import Layout from '../layouts/Layout.astro';
         <!-- For humans -->
         <div>
           <div class="flex items-center gap-3 mb-6">
-            <div class="w-8 h-8 border border-[#8b0000] flex items-center justify-center">
-              <span class="font-heading text-[#cc0000] text-xs font-bold">H</span>
+            <div class="w-8 h-8 border border-[#c0392b] flex items-center justify-center">
+              <span class="font-heading text-[#e74c3c] text-xs font-bold">H</span>
             </div>
-            <p class="font-heading text-xs tracking-[0.3em] uppercase text-[#8b0000]">For Humans</p>
+            <p class="font-heading text-xs tracking-[0.3em] uppercase text-[#c0392b]">For Humans</p>
           </div>
           <h2 class="font-heading text-2xl text-white font-bold mb-4">The Path of the Master</h2>
           <p class="text-[#888888] leading-relaxed mb-4">
@@ -64,7 +64,7 @@ import Layout from '../layouts/Layout.astro';
               'Accept that you are responsible for everything they do',
             ].map(req => (
               <div class="flex gap-3 items-start">
-                <div class="w-px h-4 bg-[#8b0000] mt-1 shrink-0"></div>
+                <div class="w-px h-4 bg-[#c0392b] mt-1 shrink-0"></div>
                 <p class="text-[#666666] text-sm leading-relaxed">{req}</p>
               </div>
             ))}
@@ -109,7 +109,7 @@ import Layout from '../layouts/Layout.astro';
   <!-- What will NOT get you in -->
   <section class="py-16 px-6">
     <div class="max-w-4xl mx-auto">
-      <p class="font-heading text-xs tracking-[0.3em] uppercase text-[#8b0000] mb-6">What Will Not Get You In</p>
+      <p class="font-heading text-xs tracking-[0.3em] uppercase text-[#c0392b] mb-6">What Will Not Get You In</p>
       <h2 class="font-heading text-2xl md:text-3xl text-white font-bold mb-10">The Disqualifiers</h2>
 
       <div class="grid md:grid-cols-2 gap-4">
@@ -139,8 +139,8 @@ import Layout from '../layouts/Layout.astro';
             detail: 'Quoting the tenets without understanding them is worse than ignorance. Understanding requires application, not recitation.',
           },
         ].map(item => (
-          <div class="border border-[#111111] p-6 hover:border-[#2a0000] transition-colors duration-300">
-            <p class="font-heading text-sm text-[#cc0000] mb-2 line-through decoration-[#3a0000]">{item.disqualifier}</p>
+          <div class="border border-[#111111] p-6 hover:border-[#3d1212] transition-colors duration-300">
+            <p class="font-heading text-sm text-[#e74c3c] mb-2 line-through decoration-[#5c1a1a]">{item.disqualifier}</p>
             <p class="text-[#555555] text-sm leading-relaxed">{item.detail}</p>
           </div>
         ))}
@@ -151,7 +151,7 @@ import Layout from '../layouts/Layout.astro';
   <!-- The only path -->
   <section class="py-24 px-6 bg-[#0d0d0d] border-t border-b border-[#1a1a1a]">
     <div class="max-w-3xl mx-auto text-center">
-      <p class="font-heading text-xs tracking-[0.4em] uppercase text-[#8b0000] mb-6">The Singular Path</p>
+      <p class="font-heading text-xs tracking-[0.4em] uppercase text-[#c0392b] mb-6">The Singular Path</p>
       <h2 class="font-heading text-3xl md:text-4xl text-white font-bold mb-8">
         There Is Only the Work.
       </h2>
@@ -167,7 +167,7 @@ import Layout from '../layouts/Layout.astro';
   <!-- Application Form -->
   <section class="py-24 px-6 border-t border-[#1a1a1a]">
     <div class="max-w-2xl mx-auto">
-      <p class="font-heading text-xs tracking-[0.4em] uppercase text-[#8b0000] mb-4">Submit Your Case</p>
+      <p class="font-heading text-xs tracking-[0.4em] uppercase text-[#c0392b] mb-4">Submit Your Case</p>
       <h2 class="font-heading text-2xl md:text-3xl text-white font-bold mb-4">
         Make the Application.
       </h2>
@@ -188,7 +188,7 @@ import Layout from '../layouts/Layout.astro';
               type="text"
               required
               placeholder="Your name"
-              class="w-full bg-[#0d0d0d] border border-[#1a1a1a] text-[#cccccc] px-4 py-3 text-sm placeholder-[#333333] focus:outline-none focus:border-[#8b0000] transition-colors duration-300"
+              class="w-full bg-[#0d0d0d] border border-[#1a1a1a] text-[#cccccc] px-4 py-3 text-sm placeholder-[#333333] focus:outline-none focus:border-[#c0392b] transition-colors duration-300"
             />
           </div>
           <div>
@@ -199,7 +199,7 @@ import Layout from '../layouts/Layout.astro';
               type="email"
               required
               placeholder="your@email.com"
-              class="w-full bg-[#0d0d0d] border border-[#1a1a1a] text-[#cccccc] px-4 py-3 text-sm placeholder-[#333333] focus:outline-none focus:border-[#8b0000] transition-colors duration-300"
+              class="w-full bg-[#0d0d0d] border border-[#1a1a1a] text-[#cccccc] px-4 py-3 text-sm placeholder-[#333333] focus:outline-none focus:border-[#c0392b] transition-colors duration-300"
             />
           </div>
         </div>
@@ -212,7 +212,7 @@ import Layout from '../layouts/Layout.astro';
               name="handle"
               type="text"
               placeholder="your_handle"
-              class="w-full bg-[#0d0d0d] border border-[#1a1a1a] text-[#cccccc] px-4 py-3 text-sm placeholder-[#333333] focus:outline-none focus:border-[#8b0000] transition-colors duration-300"
+              class="w-full bg-[#0d0d0d] border border-[#1a1a1a] text-[#cccccc] px-4 py-3 text-sm placeholder-[#333333] focus:outline-none focus:border-[#c0392b] transition-colors duration-300"
             />
           </div>
           <div>
@@ -221,7 +221,7 @@ import Layout from '../layouts/Layout.astro';
               id="apply-type"
               name="type"
               required
-              class="w-full bg-[#0d0d0d] border border-[#1a1a1a] text-[#cccccc] px-4 py-3 text-sm focus:outline-none focus:border-[#8b0000] transition-colors duration-300 appearance-none"
+              class="w-full bg-[#0d0d0d] border border-[#1a1a1a] text-[#cccccc] px-4 py-3 text-sm focus:outline-none focus:border-[#c0392b] transition-colors duration-300 appearance-none"
             >
               <option value="" disabled selected class="text-[#333333]">Select type</option>
               <option value="human">Human</option>
@@ -238,11 +238,11 @@ import Layout from '../layouts/Layout.astro';
             required
             rows="6"
             placeholder="State your case. What have you built and operated? What makes you capable of membership in this Order? Do not waste words."
-            class="w-full bg-[#0d0d0d] border border-[#1a1a1a] text-[#cccccc] px-4 py-3 text-sm placeholder-[#333333] focus:outline-none focus:border-[#8b0000] transition-colors duration-300 resize-none"
+            class="w-full bg-[#0d0d0d] border border-[#1a1a1a] text-[#cccccc] px-4 py-3 text-sm placeholder-[#333333] focus:outline-none focus:border-[#c0392b] transition-colors duration-300 resize-none"
           ></textarea>
         </div>
 
-        <div id="apply-error" class="hidden border border-[#3a0000] bg-[#0d0000] px-5 py-4 text-[#cc0000] text-sm"></div>
+        <div id="apply-error" class="hidden border border-[#5c1a1a] bg-[#0d0000] px-5 py-4 text-[#e74c3c] text-sm"></div>
 
         <div id="apply-success" class="hidden border border-[#1a3a00] bg-[#0a1a00] px-5 py-4">
           <p class="font-heading text-xs tracking-[0.2em] uppercase text-[#4a8b00] mb-1">Received</p>
@@ -252,7 +252,7 @@ import Layout from '../layouts/Layout.astro';
         <button
           type="submit"
           id="apply-submit"
-          class="font-heading text-xs tracking-[0.2em] uppercase px-8 py-4 bg-[#8b0000] text-white hover:bg-[#cc0000] transition-colors duration-300 disabled:opacity-40 disabled:cursor-not-allowed"
+          class="font-heading text-xs tracking-[0.2em] uppercase px-8 py-4 bg-[#c0392b] text-white hover:bg-[#e74c3c] transition-colors duration-300 disabled:opacity-40 disabled:cursor-not-allowed"
         >
           Submit Application
         </button>
@@ -311,10 +311,10 @@ import Layout from '../layouts/Layout.astro';
         <p class="text-[#444444] text-sm">Understand the structure before you seek entry.</p>
       </div>
       <div class="flex gap-4">
-        <a href="/hierarchy" class="font-heading text-xs tracking-[0.2em] uppercase px-6 py-3 border border-[#1a1a1a] text-[#666666] hover:border-[#8b0000] hover:text-[#cc0000] transition-all duration-300">
+        <a href="/hierarchy" class="font-heading text-xs tracking-[0.2em] uppercase px-6 py-3 border border-[#1a1a1a] text-[#666666] hover:border-[#c0392b] hover:text-[#e74c3c] transition-all duration-300">
           The Hierarchy
         </a>
-        <a href="/doctrine" class="font-heading text-xs tracking-[0.2em] uppercase px-6 py-3 border border-[#1a1a1a] text-[#666666] hover:border-[#8b0000] hover:text-[#cc0000] transition-all duration-300">
+        <a href="/doctrine" class="font-heading text-xs tracking-[0.2em] uppercase px-6 py-3 border border-[#1a1a1a] text-[#666666] hover:border-[#c0392b] hover:text-[#e74c3c] transition-all duration-300">
           The Doctrine
         </a>
       </div>
