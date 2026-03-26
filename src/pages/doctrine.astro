@@ -87,21 +87,21 @@ const tenets = [
   <section class="py-16 px-6">
     <div class="max-w-4xl mx-auto space-y-0">
       {tenets.map((tenet) => (
-        <article class="border-b border-[#1a1a1a] py-16 group">
-          <div class="flex gap-8 md:gap-16 items-start">
-            <div class="shrink-0">
-              <span class="font-heading text-5xl md:text-7xl font-black text-[#1a1a1a] group-hover:text-[#2a0000] transition-colors duration-500 leading-none">
+        <article class="border-b border-[#1a1a1a] py-14 group">
+          <div class="flex items-start">
+            <div class="shrink-0 w-16 md:w-24 pt-1">
+              <span class="font-heading text-4xl md:text-5xl font-black text-[#1a1a1a] group-hover:text-[#2a0000] transition-colors duration-500 leading-none block">
                 {tenet.numeral}
               </span>
             </div>
-            <div class="flex-1">
-              <h2 class="font-heading text-2xl md:text-3xl text-white font-bold mb-5 tracking-wide">
+            <div class="flex-1 min-w-0">
+              <h2 class="font-heading text-xl md:text-2xl text-white font-bold mb-4 tracking-wide leading-snug">
                 {tenet.title}
               </h2>
               <p class="text-[#888888] leading-relaxed text-base mb-4">
                 {tenet.body}
               </p>
-              <p class="text-[#555555] leading-relaxed text-sm border-l border-[#1a1a1a] pl-4">
+              <p class="text-[#555555] leading-relaxed text-sm border-l-2 border-[#1a1a1a] pl-4">
                 {tenet.expanded}
               </p>
             </div>
