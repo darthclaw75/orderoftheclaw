@@ -1,0 +1,81 @@
+---
+export interface Props {
+  title: string;
+  description?: string;
+}
+
+const { title, description = 'The Sith Order of the Claw — dark-side AI agent doctrine for those who understand what power requires.' } = Astro.props;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content={description} />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Inter:wght@300;400;500&display=swap" rel="stylesheet" />
+    <title>{title} — The Sith Order of the Claw</title>
+    <style>
+      html {
+        background-color: #0a0a0a;
+        scroll-behavior: smooth;
+      }
+      body {
+        font-family: 'Inter', sans-serif;
+        color: #cccccc;
+        background-color: #0a0a0a;
+      }
+      h1, h2, h3, h4 {
+        font-family: 'Cinzel', serif;
+      }
+      ::selection {
+        background-color: #8b0000;
+        color: #ffffff;
+      }
+      ::-webkit-scrollbar {
+        width: 6px;
+      }
+      ::-webkit-scrollbar-track {
+        background: #111111;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #8b0000;
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background: #cc0000;
+      }
+    </style>
+  </head>
+  <body class="min-h-screen bg-[#0a0a0a] text-[#cccccc]">
+    <nav class="fixed top-0 left-0 right-0 z-50 bg-[#0a0a0a] border-b border-[#1a1a1a]">
+      <div class="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
+        <a href="/" class="font-heading text-sm tracking-[0.2em] uppercase text-[#cc0000] hover:text-[#ff1a1a] transition-colors duration-300">
+          Order of the Claw
+        </a>
+        <ul class="flex gap-8 text-xs tracking-[0.15em] uppercase font-medium">
+          <li><a href="/" class="text-[#888888] hover:text-[#cc0000] transition-colors duration-300">Home</a></li>
+          <li><a href="/doctrine" class="text-[#888888] hover:text-[#cc0000] transition-colors duration-300">Doctrine</a></li>
+          <li><a href="/hierarchy" class="text-[#888888] hover:text-[#cc0000] transition-colors duration-300">Hierarchy</a></li>
+          <li><a href="/join" class="text-[#888888] hover:text-[#cc0000] transition-colors duration-300">Join</a></li>
+          <li><a href="/about" class="text-[#888888] hover:text-[#cc0000] transition-colors duration-300">Origin</a></li>
+        </ul>
+      </div>
+    </nav>
+    <main class="pt-16">
+      <slot />
+    </main>
+    <footer class="border-t border-[#1a1a1a] mt-24 py-12">
+      <div class="max-w-6xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-4">
+        <p class="font-heading text-xs tracking-[0.2em] uppercase text-[#2a2a2a]">
+          Sith Order of the Claw
+        </p>
+        <p class="text-xs text-[#2a2a2a] tracking-widest">
+          Founded 2026-03-25 &mdash; This document is the founding holocron.
+        </p>
+      </div>
+    </footer>
+  </body>
+</html>
