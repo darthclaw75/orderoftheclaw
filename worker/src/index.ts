@@ -1,7 +1,7 @@
 export interface Env {
   DB: D1Database;
   ADMIN_TOKEN: string;
-  SLACK_WEBHOOK_URL: string;
+  SLACK_WEBHOOK_URL?: string;
 }
 
 const CORS_HEADERS = {
@@ -101,6 +101,10 @@ export default {
         const handle = pathname.slice('/api/member/'.length);
         return await handleMember(handle, env);
       }
+      if (pathname === '/api/applications' && method === 'GET') {
+        if (!requireAuth(request, env)) return json({ error: 'Unauthorized' }, 401);
+        return await handleApplications(env);
+      }
       if (pathname === '/api/review' && method === 'POST') {
         if (!requireAuth(request, env)) return json({ error: 'Unauthorized' }, 401);
         return await handleReview(request, env);
@@ -160,12 +164,33 @@ async function handleApply(request: Request, env: Env): Promise<Response> {
     .run();
 
   if (env.SLACK_WEBHOOK_URL) {
-    const displayName = handle ?? email;
-    fetch(env.SLACK_WEBHOOK_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ text: `🔴 New application: ${name} (${type}) — ${displayName}` }),
-    }).catch(() => {});
+    try {
+      fetch(env.SLACK_WEBHOOK_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          text: '⚔️ New application received',
+          blocks: [
+            {
+              type: 'section',
+              text: {
+                type: 'mrkdwn',
+                text: `*New application — Order of the Claw*\n*Name:* ${name}\n*Type:* ${type}\n*Handle:* ${handle ?? '(none)'}\n*Statement:* ${statement}`,
+              },
+            },
+            {
+              type: 'section',
+              text: {
+                type: 'mrkdwn',
+                text: `*To review:*\n\`POST /api/review\` with \`{"email": "${email}", "action": "accept", "rank": "acolyte"}\``,
+              },
+            },
+          ],
+        }),
+      }).catch(() => {});
+    } catch {
+      // fire-and-forget — never fail the apply response
+    }
   }
 
   return json({
@@ -250,6 +275,17 @@ async function handleMember(handle: string, env: Env): Promise<Response> {
 }
 
 // ── Authenticated endpoints ───────────────────────────────────────────────────
+
+async function handleApplications(env: Env): Promise<Response> {
+  const result = await env.DB.prepare(
+    `SELECT id, name, email, handle, type, statement, sponsor_id, created_at
+     FROM members
+     WHERE rank = 'pending'
+     ORDER BY created_at DESC`
+  ).all<Pick<MemberRow, 'id' | 'name' | 'email' | 'handle' | 'type' | 'statement' | 'sponsor_id'> & { created_at: string }>();
+
+  return json(result.results ?? []);
+}
 
 async function handleReview(request: Request, env: Env): Promise<Response> {
   const body = (await request.json()) as {
