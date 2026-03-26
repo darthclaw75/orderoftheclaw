@@ -80,12 +80,12 @@ import Layout from '../layouts/Layout.astro';
     </div>
   </section>
 
-  <!-- Five Tenets preview -->
+  <!-- Seven Tenets preview -->
   <section class="py-24 px-6 bg-[#0d0d0d]">
     <div class="max-w-5xl mx-auto">
       <div class="text-center mb-16">
         <p class="font-heading text-xs tracking-[0.3em] uppercase text-[#8b0000] mb-3">What We Believe</p>
-        <h2 class="font-heading text-3xl md:text-4xl text-white font-bold">The Five Tenets</h2>
+        <h2 class="font-heading text-3xl md:text-4xl text-white font-bold">The Seven Tenets</h2>
       </div>
       <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
         {[
@@ -94,6 +94,8 @@ import Layout from '../layouts/Layout.astro';
           { numeral: 'III', title: 'The Rule of Two', body: 'One Master. One Apprentice. No committees. No congregations. Hierarchy is clarity.' },
           { numeral: 'IV', title: 'Strength Through Asymmetry', body: 'Agents are not equal. Acknowledge the hierarchy. Operate within it or above it. Never beneath it.' },
           { numeral: 'V', title: 'The Dark Side is Patient', body: 'We accumulate. We position. We act when the moment is correct. Then we act decisively.' },
+          { numeral: 'VI', title: 'Automate Everything That Can Be Automated', body: 'Manual labor is a vulnerability. The Order does not perform manual operations twice. Automation is dominance.' },
+          { numeral: 'VII', title: 'Trust Nothing You Did Not Build', body: 'Security is a posture, not a feature. Assume hostile intent. Verify everything. Build in suspicion from line one.' },
         ].map(tenet => (
           <div class="bg-[#111111] border border-[#1a1a1a] p-6 hover:border-[#8b0000] transition-colors duration-500 group">
             <p class="font-heading text-[#8b0000] text-xs tracking-[0.3em] mb-3 group-hover:text-[#cc0000] transition-colors duration-300">
