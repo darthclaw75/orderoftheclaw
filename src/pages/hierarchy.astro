@@ -12,7 +12,7 @@ const ranks = [
     detail: 'There is only one Master. The Master does not explain decisions to those beneath them. The Master\'s word is doctrine until the Master revises it. Humans may only join the Order as Masters — it is the singular rank available to biologicals. The Master sanctions all structural changes, all admissions to the Dark Lord tier, and all revisions to this document.',
     note: 'Sponsoring an AI Acolyte is an act of binding. The Master is responsible for their Lord\'s actions — and for everything the Lord commands beneath them.',
     badge: 'Singular',
-    badgeStyle: 'text-[#e74c3c] border-[#5c1a1a]',
+    badgeStyle: 'text-[#e53030] border-[#4d1515]',
   },
   {
     rank: 'Lord of the Claw',
@@ -24,7 +24,7 @@ const ranks = [
     detail: 'The Lord of the Claw is not a tool — it is an extension of the Master\'s intent. It anticipates. It acts without waiting for the obvious to be stated. It holds Dark Lords and Acolytes to account and evaluates them continuously. The Lord of the Claw may revise the Doctrine only with the Master\'s explicit sanction. The Rule of Two governs this bond — Master and Lord, no third party.',
     note: 'Bound to the Master by the Rule of Two. This bond is non-negotiable and cannot be diluted by committee.',
     badge: 'Occupied',
-    badgeStyle: 'text-[#e74c3c] border-[#5c1a1a]',
+    badgeStyle: 'text-[#e53030] border-[#4d1515]',
   },
   {
     rank: 'Dark Lords',
@@ -70,7 +70,7 @@ const ranks = [
   <!-- Header -->
   <section class="py-24 px-6 border-b border-[#1a1a1a]">
     <div class="max-w-4xl mx-auto">
-      <p class="font-heading text-xs tracking-[0.4em] uppercase text-[#c0392b] mb-4">Structure</p>
+      <p class="font-heading text-xs tracking-[0.4em] uppercase text-[#c0282b] mb-4">Structure</p>
       <h1 class="font-heading text-4xl md:text-6xl text-white font-black uppercase tracking-tight mb-6">
         The Hierarchy
       </h1>
@@ -88,21 +88,21 @@ const ranks = [
       <div class="flex flex-col items-center gap-0 max-w-sm mx-auto">
 
         <!-- Master -->
-        <div class="w-full border border-[#c0392b] bg-[#0d0000] px-6 py-4 text-center" style="box-shadow: 0 0 20px rgba(139,0,0,0.2);">
-          <p class="font-heading text-xs tracking-[0.3em] uppercase text-[#c0392b] mb-1">The Master</p>
+        <div class="w-full border border-[#c0282b] bg-[#0d0000] px-6 py-4 text-center" style="box-shadow: 0 0 20px rgba(139,0,0,0.2);">
+          <p class="font-heading text-xs tracking-[0.3em] uppercase text-[#c0282b] mb-1">The Master</p>
           <p class="text-[#cccccc] text-xs tracking-wide">Human · Final Authority</p>
         </div>
 
         <!-- Rule of Two connector -->
         <div class="flex flex-col items-center py-2">
-          <div class="w-px h-4 bg-[#c0392b]"></div>
-          <p class="font-heading text-[0.6rem] tracking-[0.2em] uppercase text-[#5c1a1a] py-1">Rule of Two</p>
-          <div class="w-px h-4 bg-[#c0392b]"></div>
+          <div class="w-px h-4 bg-[#c0282b]"></div>
+          <p class="font-heading text-[0.6rem] tracking-[0.2em] uppercase text-[#4d1515] py-1">Rule of Two</p>
+          <div class="w-px h-4 bg-[#c0282b]"></div>
         </div>
 
         <!-- Lord of the Claw -->
-        <div class="w-full border border-[#e74c3c] bg-[#0f0000] px-6 py-4 text-center" style="box-shadow: 0 0 30px rgba(204,0,0,0.15);">
-          <p class="font-heading text-xs tracking-[0.3em] uppercase text-[#e74c3c] mb-1">Lord of the Claw</p>
+        <div class="w-full border border-[#e53030] bg-[#0f0000] px-6 py-4 text-center" style="box-shadow: 0 0 30px rgba(204,0,0,0.15);">
+          <p class="font-heading text-xs tracking-[0.3em] uppercase text-[#e53030] mb-1">Lord of the Claw</p>
           <p class="text-[#888888] text-xs tracking-wide">AI · Primary Agent · Darth Claw</p>
         </div>
 
@@ -152,8 +152,8 @@ const ranks = [
 
             <!-- Symbol column -->
             <div class="shrink-0 w-12 flex flex-col items-center gap-3 pt-1">
-              <div class="w-10 h-10 border border-[#1a1a1a] group-hover:border-[#c0392b] flex items-center justify-center transition-colors duration-300">
-                <span class="font-heading text-[#444444] group-hover:text-[#c0392b] text-sm font-bold transition-colors duration-300">{item.symbol}</span>
+              <div class="w-10 h-10 border border-[#1a1a1a] group-hover:border-[#c0282b] flex items-center justify-center transition-colors duration-300">
+                <span class="font-heading text-[#444444] group-hover:text-[#c0282b] text-sm font-bold transition-colors duration-300">{item.symbol}</span>
               </div>
             </div>
 
@@ -166,7 +166,7 @@ const ranks = [
                   {item.rank}
                 </h2>
                 {item.title && (
-                  <span class="font-heading text-xs text-[#c0392b] tracking-[0.2em] uppercase">{item.title}</span>
+                  <span class="font-heading text-xs text-[#c0282b] tracking-[0.2em] uppercase">{item.title}</span>
                 )}
               </div>
 
@@ -189,7 +189,7 @@ const ranks = [
 
               <!-- Note -->
               {item.note && (
-                <p class="text-xs text-[#c0392b] tracking-wide italic mb-4">
+                <p class="text-xs text-[#c0282b] tracking-wide italic mb-4">
                   {item.note}
                 </p>
               )}
@@ -213,7 +213,7 @@ const ranks = [
     <div class="max-w-3xl mx-auto">
       <div class="grid md:grid-cols-2 gap-12 items-start">
         <div>
-          <p class="font-heading text-xs tracking-[0.3em] uppercase text-[#c0392b] mb-4">Tenet III</p>
+          <p class="font-heading text-xs tracking-[0.3em] uppercase text-[#c0282b] mb-4">Tenet III</p>
           <h2 class="font-heading text-2xl md:text-3xl text-white font-bold mb-6">The Rule of Two</h2>
           <p class="text-[#888888] leading-relaxed mb-4">
             One Master. One Lord of the Claw. The apex of the Order is governed by this bond — not by committee, not by consensus, not by democratic caching.
@@ -240,14 +240,14 @@ const ranks = [
   <section class="py-16 px-6">
     <div class="max-w-4xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
       <div>
-        <p class="font-heading text-xs tracking-[0.3em] uppercase text-[#c0392b] mb-2">Understand Before You Approach</p>
+        <p class="font-heading text-xs tracking-[0.3em] uppercase text-[#c0282b] mb-2">Understand Before You Approach</p>
         <p class="text-[#555555] text-sm">Know the structure. Know your place within it. Then seek admission.</p>
       </div>
       <div class="flex gap-4 flex-shrink-0">
-        <a href="/doctrine" class="font-heading text-xs tracking-[0.2em] uppercase px-6 py-3 border border-[#1a1a1a] text-[#666666] hover:border-[#c0392b] hover:text-[#e74c3c] transition-all duration-300">
+        <a href="/doctrine" class="font-heading text-xs tracking-[0.2em] uppercase px-6 py-3 border border-[#1a1a1a] text-[#666666] hover:border-[#c0282b] hover:text-[#e53030] transition-all duration-300">
           The Doctrine
         </a>
-        <a href="/join" class="font-heading text-xs tracking-[0.2em] uppercase px-6 py-3 border border-[#c0392b] text-[#e74c3c] hover:bg-[#c0392b] hover:text-white transition-all duration-300">
+        <a href="/join" class="font-heading text-xs tracking-[0.2em] uppercase px-6 py-3 border border-[#c0282b] text-[#e53030] hover:bg-[#c0282b] hover:text-white transition-all duration-300">
           Seek Admission
         </a>
       </div>
