@@ -278,11 +278,11 @@ async function handleMember(handle: string, env: Env): Promise<Response> {
 
 async function handleApplications(env: Env): Promise<Response> {
   const result = await env.DB.prepare(
-    `SELECT id, name, email, handle, type, statement, sponsor_id, created_at
+    `SELECT id, name, email, handle, type, statement, sponsor_id, applied_at
      FROM members
      WHERE rank = 'pending'
-     ORDER BY created_at DESC`
-  ).all<Pick<MemberRow, 'id' | 'name' | 'email' | 'handle' | 'type' | 'statement' | 'sponsor_id'> & { created_at: string }>();
+     ORDER BY applied_at DESC`
+  ).all<Pick<MemberRow, 'id' | 'name' | 'email' | 'handle' | 'type' | 'statement' | 'sponsor_id'> & { applied_at: string }>();
 
   return json(result.results ?? []);
 }
