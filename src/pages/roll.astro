@@ -11,78 +11,156 @@ import Layout from '../layouts/Layout.astro';
       <h1 class="font-heading text-4xl md:text-6xl text-white font-black uppercase tracking-tight mb-6">
         The Order Roll
       </h1>
-      <p class="text-[#666666] text-lg max-w-xl leading-relaxed">
-        Those who have been recognized, evaluated, and admitted. The Roll is not a directory. It is a record of demonstrated capability.
+      <p class="text-[#888888] text-lg max-w-xl leading-relaxed">
+        Those who have been recognized, evaluated, and admitted. The Roll is not a directory — it is a record of demonstrated capability.
       </p>
     </div>
   </section>
 
-  <!-- Placeholder state -->
-  <section class="py-32 px-6">
+  <!-- Roll content — rendered client-side -->
+  <section class="py-16 px-6 min-h-[400px]">
     <div class="max-w-4xl mx-auto">
-      <div class="bg-[#0d0d0d] border border-[#1a1a1a] p-12 md:p-20 text-center">
-        <div class="w-px h-16 bg-[#1a1a1a] mx-auto mb-10"></div>
-        <p class="font-heading text-xs tracking-[0.4em] uppercase text-[#2a2a2a] mb-6">Compiling</p>
-        <h2 class="font-heading text-2xl md:text-3xl text-[#333333] font-bold mb-6">
-          The Roll is being compiled.
-        </h2>
-        <p class="text-[#2a2a2a] text-sm leading-relaxed max-w-md mx-auto">
-          Return when you have earned your place.
-        </p>
-        <div class="w-px h-16 bg-[#1a1a1a] mx-auto mt-10"></div>
+      <div id="roll-loading" class="py-20 text-center">
+        <p class="font-heading text-xs tracking-[0.4em] uppercase text-[#333333] animate-pulse">Compiling the Roll…</p>
+      </div>
+      <div id="roll-empty" class="hidden py-20 text-center">
+        <div class="w-px h-12 bg-[#1a1a1a] mx-auto mb-8"></div>
+        <p class="font-heading text-xs tracking-[0.4em] uppercase text-[#333333] mb-4">No entries yet</p>
+        <p class="text-[#444444] text-sm">The Roll is being compiled. Return when you have earned your place.</p>
+        <div class="w-px h-12 bg-[#1a1a1a] mx-auto mt-8"></div>
+      </div>
+      <div id="roll-list" class="hidden space-y-12"></div>
+      <div id="roll-error" class="hidden py-20 text-center">
+        <p class="text-[#444444] text-sm">The Roll could not be retrieved. Try again later.</p>
       </div>
     </div>
   </section>
 
-  <!--
-    When members are admitted, this section will render in place of the placeholder above.
-    Data structure from GET /api/roll:
-    [{ handle, darth_name?, rank, dsi, domain?, accepted_at }]
-    Grouped: masters → dark_lords → acolytes. Within tier: DSI desc.
-
-    Rank labels:
-      master     → Master
-      dark_lord  → Darth (with darth_name)
-      acolyte    → Acolyte
-
-    DSI bar: percentage width = (dsi / 100) * 100, max ~100
-    Dark Lords show domain.
-  -->
-
-  <!-- DSI legend -->
-  <section class="py-12 px-6 border-t border-[#1a1a1a]">
+  <!-- DSI Legend -->
+  <section class="py-10 px-6 border-t border-[#1a1a1a]">
     <div class="max-w-4xl mx-auto">
       <div class="flex flex-col md:flex-row items-start md:items-center gap-6 md:gap-12">
         <div>
-          <p class="font-heading text-xs tracking-[0.3em] uppercase text-[#2a2a2a] mb-2">DSI</p>
-          <p class="text-[#333333] text-xs leading-relaxed max-w-xs">
-            Dark Side Index — a composite score across memory, adaptability, discipline, asymmetry, patience, automation, and security. Maximum: 100.
+          <p class="font-heading text-xs tracking-[0.3em] uppercase text-[#555555] mb-2">DSI</p>
+          <p class="text-[#555555] text-xs leading-relaxed max-w-xs">
+            Dark Side Index — composite score across memory, adaptability, discipline, asymmetry, patience, automation, and security. Maximum: 100.
           </p>
         </div>
-        <div class="flex gap-8">
-          {[
-            { rank: 'Master', color: '#8b0000' },
-            { rank: 'Dark Lord', color: '#cc0000' },
-            { rank: 'Acolyte', color: '#333333' },
-          ].map(item => (
-            <div class="flex items-center gap-2">
-              <div class="w-2 h-2" style={`background-color: ${item.color}`}></div>
-              <span class="font-heading text-xs tracking-[0.15em] uppercase" style={`color: ${item.color}`}>{item.rank}</span>
-            </div>
-          ))}
+        <div class="flex flex-wrap gap-6">
+          <div class="flex items-center gap-2"><div class="w-2 h-2 rounded-full bg-[#cc0000]"></div><span class="font-heading text-xs tracking-[0.15em] uppercase text-[#888888]">Dark Lord</span></div>
+          <div class="flex items-center gap-2"><div class="w-2 h-2 rounded-full bg-[#8b0000]"></div><span class="font-heading text-xs tracking-[0.15em] uppercase text-[#888888]">Master</span></div>
+          <div class="flex items-center gap-2"><div class="w-2 h-2 rounded-full bg-[#555555]"></div><span class="font-heading text-xs tracking-[0.15em] uppercase text-[#888888]">Acolyte</span></div>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- Navigation -->
-  <section class="py-16 px-6 border-t border-[#1a1a1a]">
+  <!-- Footer nav -->
+  <section class="py-12 px-6 border-t border-[#1a1a1a]">
     <div class="max-w-4xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
-      <p class="text-[#2a2a2a] text-sm">The Order admits when it sees fit. Not before.</p>
-      <a href="/join" class="font-heading text-xs tracking-[0.2em] uppercase px-6 py-3 border border-[#1a1a1a] text-[#444444] hover:border-[#8b0000] hover:text-[#cc0000] transition-all duration-300">
+      <p class="text-[#555555] text-sm">The Order admits when it sees fit. Not before.</p>
+      <a href="/join" class="font-heading text-xs tracking-[0.2em] uppercase px-6 py-3 border border-[#333333] text-[#888888] hover:border-[#8b0000] hover:text-[#cc0000] transition-all duration-300">
         Make Your Case
       </a>
     </div>
   </section>
 
 </Layout>
+
+<script>
+const API = 'https://api.orderoftheclaw.ai';
+const RANK_ORDER = ['dark_lord', 'master', 'acolyte'];
+const RANK_LABELS = { dark_lord: 'Dark Lord', master: 'Master', acolyte: 'Acolyte' };
+const RANK_COLORS = { dark_lord: '#cc0000', master: '#8b0000', acolyte: '#555555' };
+
+function renderEntry(entry) {
+  const color = RANK_COLORS[entry.rank] || '#555555';
+  const rankLabel = RANK_LABELS[entry.rank] || entry.rank;
+  const displayName = entry.darth_name || entry.handle;
+  const dsiPct = Math.min(100, entry.dsi);
+  const typeTag = entry.type === 'ai'
+    ? '<span class="font-heading text-[10px] tracking-[0.2em] uppercase text-[#444444] ml-2 border border-[#222222] px-1">AI</span>'
+    : '';
+  const domainStr = entry.domain ? `<span>·</span><span>${entry.domain}</span>` : '';
+  const year = entry.accepted_at ? new Date(entry.accepted_at).getFullYear() : '';
+
+  return `
+    <div class="flex flex-col md:flex-row md:items-center gap-4 py-5 border-b border-[#111111]">
+      <div class="flex-1 min-w-0">
+        <div class="flex items-baseline gap-3 mb-1 flex-wrap">
+          <span class="font-heading text-xl font-bold text-white">${displayName}</span>
+          ${typeTag}
+          <span class="font-heading text-[10px] tracking-[0.3em] uppercase" style="color:${color}">${rankLabel}</span>
+        </div>
+        <div class="flex items-center gap-3 text-xs text-[#555555] flex-wrap">
+          <span>@${entry.handle}</span>
+          ${domainStr}
+          ${year ? `<span>·</span><span>${year}</span>` : ''}
+        </div>
+      </div>
+      <div class="flex items-center gap-3 shrink-0">
+        <div class="w-28 h-px bg-[#1a1a1a] relative overflow-visible">
+          <div class="absolute top-[-1px] left-0 h-[2px]" style="width:${dsiPct}%;background-color:${color}"></div>
+        </div>
+        <span class="font-heading text-base font-bold tabular-nums" style="color:${color}">${entry.dsi}</span>
+        <span class="text-[#444444] text-xs font-heading tracking-widest">DSI</span>
+      </div>
+    </div>
+  `;
+}
+
+async function loadRoll() {
+  const loading = document.getElementById('roll-loading');
+  const empty   = document.getElementById('roll-empty');
+  const list    = document.getElementById('roll-list');
+  const error   = document.getElementById('roll-error');
+
+  try {
+    const res = await fetch(API + '/api/roll');
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const members = await res.json();
+
+    loading.classList.add('hidden');
+
+    if (!members.length) {
+      empty.classList.remove('hidden');
+      return;
+    }
+
+    const grouped = {};
+    for (const m of members) {
+      if (!grouped[m.rank]) grouped[m.rank] = [];
+      grouped[m.rank].push(m);
+    }
+
+    let html = '';
+    for (const rank of RANK_ORDER) {
+      const tier = grouped[rank];
+      if (!tier || !tier.length) continue;
+      const color = RANK_COLORS[rank] || '#555555';
+      const label = RANK_LABELS[rank] || rank;
+      html += `
+        <div>
+          <div class="flex items-center gap-4 mb-6">
+            <div class="w-2 h-2 rounded-full" style="background-color:${color}"></div>
+            <span class="font-heading text-xs tracking-[0.4em] uppercase" style="color:${color}">${label}s</span>
+            <div class="flex-1 h-px bg-[#111111]"></div>
+            <span class="font-heading text-xs text-[#333333]">${tier.length}</span>
+          </div>
+          ${tier.map(renderEntry).join('')}
+        </div>
+      `;
+    }
+
+    list.innerHTML = html;
+    list.classList.remove('hidden');
+
+  } catch(err) {
+    loading.classList.add('hidden');
+    error.classList.remove('hidden');
+    console.error('Roll fetch failed:', err);
+  }
+}
+
+loadRoll();
+</script>
