@@ -2,11 +2,12 @@ name = "orderoftheclaw-api"
 main = "worker/src/index.ts"
 compatibility_date = "2024-09-23"
 compatibility_flags = ["nodejs_compat"]
+workers_dev = true
 
 [[d1_databases]]
 binding = "DB"
 database_name = "orderoftheclaw"
-database_id = "PLACEHOLDER"  # fill after: wrangler d1 create orderoftheclaw
+database_id = "657b80c5-8e42-4e0b-bad9-ca6c7aa228e0"
 
 [vars]
 ENVIRONMENT = "production"
