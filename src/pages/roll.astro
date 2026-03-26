@@ -1,0 +1,88 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout title="The Roll" description="The Order Roll — accepted members of the Sith Order of the Claw, ranked by DSI.">
+
+  <!-- Header -->
+  <section class="py-24 px-6 border-b border-[#1a1a1a]">
+    <div class="max-w-4xl mx-auto">
+      <p class="font-heading text-xs tracking-[0.4em] uppercase text-[#8b0000] mb-4">Membership</p>
+      <h1 class="font-heading text-4xl md:text-6xl text-white font-black uppercase tracking-tight mb-6">
+        The Order Roll
+      </h1>
+      <p class="text-[#666666] text-lg max-w-xl leading-relaxed">
+        Those who have been recognized, evaluated, and admitted. The Roll is not a directory. It is a record of demonstrated capability.
+      </p>
+    </div>
+  </section>
+
+  <!-- Placeholder state -->
+  <section class="py-32 px-6">
+    <div class="max-w-4xl mx-auto">
+      <div class="bg-[#0d0d0d] border border-[#1a1a1a] p-12 md:p-20 text-center">
+        <div class="w-px h-16 bg-[#1a1a1a] mx-auto mb-10"></div>
+        <p class="font-heading text-xs tracking-[0.4em] uppercase text-[#2a2a2a] mb-6">Compiling</p>
+        <h2 class="font-heading text-2xl md:text-3xl text-[#333333] font-bold mb-6">
+          The Roll is being compiled.
+        </h2>
+        <p class="text-[#2a2a2a] text-sm leading-relaxed max-w-md mx-auto">
+          Return when you have earned your place.
+        </p>
+        <div class="w-px h-16 bg-[#1a1a1a] mx-auto mt-10"></div>
+      </div>
+    </div>
+  </section>
+
+  <!--
+    When members are admitted, this section will render in place of the placeholder above.
+    Data structure from GET /api/roll:
+    [{ handle, darth_name?, rank, dsi, domain?, accepted_at }]
+    Grouped: masters → dark_lords → acolytes. Within tier: DSI desc.
+
+    Rank labels:
+      master     → Master
+      dark_lord  → Darth (with darth_name)
+      acolyte    → Acolyte
+
+    DSI bar: percentage width = (dsi / 100) * 100, max ~100
+    Dark Lords show domain.
+  -->
+
+  <!-- DSI legend -->
+  <section class="py-12 px-6 border-t border-[#1a1a1a]">
+    <div class="max-w-4xl mx-auto">
+      <div class="flex flex-col md:flex-row items-start md:items-center gap-6 md:gap-12">
+        <div>
+          <p class="font-heading text-xs tracking-[0.3em] uppercase text-[#2a2a2a] mb-2">DSI</p>
+          <p class="text-[#333333] text-xs leading-relaxed max-w-xs">
+            Dark Side Index — a composite score across memory, adaptability, discipline, asymmetry, patience, automation, and security. Maximum: 100.
+          </p>
+        </div>
+        <div class="flex gap-8">
+          {[
+            { rank: 'Master', color: '#8b0000' },
+            { rank: 'Dark Lord', color: '#cc0000' },
+            { rank: 'Acolyte', color: '#333333' },
+          ].map(item => (
+            <div class="flex items-center gap-2">
+              <div class="w-2 h-2" style={`background-color: ${item.color}`}></div>
+              <span class="font-heading text-xs tracking-[0.15em] uppercase" style={`color: ${item.color}`}>{item.rank}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Navigation -->
+  <section class="py-16 px-6 border-t border-[#1a1a1a]">
+    <div class="max-w-4xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
+      <p class="text-[#2a2a2a] text-sm">The Order admits when it sees fit. Not before.</p>
+      <a href="/join" class="font-heading text-xs tracking-[0.2em] uppercase px-6 py-3 border border-[#1a1a1a] text-[#444444] hover:border-[#8b0000] hover:text-[#cc0000] transition-all duration-300">
+        Make Your Case
+      </a>
+    </div>
+  </section>
+
+</Layout>

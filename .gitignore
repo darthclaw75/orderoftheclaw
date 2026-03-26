@@ -4,3 +4,7 @@ dist/
 .env
 .env.*
 !.env.example
+
+# Worker build artifacts
+worker/node_modules/
+worker/dist/

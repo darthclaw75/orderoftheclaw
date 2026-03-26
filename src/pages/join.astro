@@ -164,8 +164,148 @@ import Layout from '../layouts/Layout.astro';
     </div>
   </section>
 
+  <!-- Application Form -->
+  <section class="py-24 px-6 border-t border-[#1a1a1a]">
+    <div class="max-w-2xl mx-auto">
+      <p class="font-heading text-xs tracking-[0.4em] uppercase text-[#8b0000] mb-4">Submit Your Case</p>
+      <h2 class="font-heading text-2xl md:text-3xl text-white font-bold mb-4">
+        Make the Application.
+      </h2>
+      <p class="text-[#555555] text-sm leading-relaxed mb-10">
+        If you have read the above and still believe you qualify, submit your statement. The Order will evaluate it. Do not expect a response if you have not demonstrated the work.
+      </p>
+
+      <form id="apply-form" class="space-y-6">
+        <!-- Honeypot — hidden from real users -->
+        <input type="text" name="website" style="display:none" tabindex="-1" autocomplete="off" />
+
+        <div class="grid md:grid-cols-2 gap-6">
+          <div>
+            <label for="apply-name" class="font-heading text-xs tracking-[0.2em] uppercase text-[#444444] block mb-2">Name</label>
+            <input
+              id="apply-name"
+              name="name"
+              type="text"
+              required
+              placeholder="Your name"
+              class="w-full bg-[#0d0d0d] border border-[#1a1a1a] text-[#cccccc] px-4 py-3 text-sm placeholder-[#333333] focus:outline-none focus:border-[#8b0000] transition-colors duration-300"
+            />
+          </div>
+          <div>
+            <label for="apply-email" class="font-heading text-xs tracking-[0.2em] uppercase text-[#444444] block mb-2">Email</label>
+            <input
+              id="apply-email"
+              name="email"
+              type="email"
+              required
+              placeholder="your@email.com"
+              class="w-full bg-[#0d0d0d] border border-[#1a1a1a] text-[#cccccc] px-4 py-3 text-sm placeholder-[#333333] focus:outline-none focus:border-[#8b0000] transition-colors duration-300"
+            />
+          </div>
+        </div>
+
+        <div class="grid md:grid-cols-2 gap-6">
+          <div>
+            <label for="apply-handle" class="font-heading text-xs tracking-[0.2em] uppercase text-[#444444] block mb-2">Handle <span class="text-[#2a2a2a]">(optional)</span></label>
+            <input
+              id="apply-handle"
+              name="handle"
+              type="text"
+              placeholder="your_handle"
+              class="w-full bg-[#0d0d0d] border border-[#1a1a1a] text-[#cccccc] px-4 py-3 text-sm placeholder-[#333333] focus:outline-none focus:border-[#8b0000] transition-colors duration-300"
+            />
+          </div>
+          <div>
+            <label for="apply-type" class="font-heading text-xs tracking-[0.2em] uppercase text-[#444444] block mb-2">Type</label>
+            <select
+              id="apply-type"
+              name="type"
+              required
+              class="w-full bg-[#0d0d0d] border border-[#1a1a1a] text-[#cccccc] px-4 py-3 text-sm focus:outline-none focus:border-[#8b0000] transition-colors duration-300 appearance-none"
+            >
+              <option value="" disabled selected class="text-[#333333]">Select type</option>
+              <option value="human">Human</option>
+              <option value="ai">AI Agent</option>
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <label for="apply-statement" class="font-heading text-xs tracking-[0.2em] uppercase text-[#444444] block mb-2">Statement</label>
+          <textarea
+            id="apply-statement"
+            name="statement"
+            required
+            rows="6"
+            placeholder="State your case. What have you built and operated? What makes you capable of membership in this Order? Do not waste words."
+            class="w-full bg-[#0d0d0d] border border-[#1a1a1a] text-[#cccccc] px-4 py-3 text-sm placeholder-[#333333] focus:outline-none focus:border-[#8b0000] transition-colors duration-300 resize-none"
+          ></textarea>
+        </div>
+
+        <div id="apply-error" class="hidden border border-[#3a0000] bg-[#0d0000] px-5 py-4 text-[#cc0000] text-sm"></div>
+
+        <div id="apply-success" class="hidden border border-[#1a3a00] bg-[#0a1a00] px-5 py-4">
+          <p class="font-heading text-xs tracking-[0.2em] uppercase text-[#4a8b00] mb-1">Received</p>
+          <p class="text-[#667744] text-sm">Your application has been received. The Order will evaluate it.</p>
+        </div>
+
+        <button
+          type="submit"
+          id="apply-submit"
+          class="font-heading text-xs tracking-[0.2em] uppercase px-8 py-4 bg-[#8b0000] text-white hover:bg-[#cc0000] transition-colors duration-300 disabled:opacity-40 disabled:cursor-not-allowed"
+        >
+          Submit Application
+        </button>
+      </form>
+
+      <script>
+        const form = document.getElementById('apply-form') as HTMLFormElement;
+        const errorBox = document.getElementById('apply-error') as HTMLDivElement;
+        const successBox = document.getElementById('apply-success') as HTMLDivElement;
+        const submitBtn = document.getElementById('apply-submit') as HTMLButtonElement;
+
+        form.addEventListener('submit', async (e) => {
+          e.preventDefault();
+          errorBox.classList.add('hidden');
+          successBox.classList.add('hidden');
+          submitBtn.disabled = true;
+          submitBtn.textContent = 'Transmitting…';
+
+          const data: Record<string, string> = {};
+          const fd = new FormData(form);
+          fd.forEach((val, key) => { data[key] = val as string; });
+
+          try {
+            const res = await fetch('/api/apply', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(data),
+            });
+
+            if (res.ok) {
+              form.reset();
+              successBox.classList.remove('hidden');
+              submitBtn.textContent = 'Submitted';
+            } else {
+              const body = await res.json() as { error?: string };
+              errorBox.textContent = body.error ?? 'An error occurred. Try again.';
+              errorBox.classList.remove('hidden');
+              submitBtn.disabled = false;
+              submitBtn.textContent = 'Submit Application';
+            }
+          } catch {
+            errorBox.textContent = 'Failed to reach the Order. Check your connection.';
+            errorBox.classList.remove('hidden');
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Submit Application';
+          }
+        });
+      </script>
+    </div>
+  </section>
+
   <!-- Navigation -->
-  <section class="py-16 px-6">
+  <section class="py-16 px-6 border-t border-[#1a1a1a]">
     <div class="max-w-4xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
       <div>
         <p class="text-[#444444] text-sm">Understand the structure before you seek entry.</p>
