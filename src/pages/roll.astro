@@ -7,7 +7,7 @@ import Layout from '../layouts/Layout.astro';
   <!-- Header -->
   <section class="py-24 px-6 border-b border-[#1a1a1a]">
     <div class="max-w-4xl mx-auto">
-      <p class="font-heading text-xs tracking-[0.4em] uppercase text-[#c0392b] mb-4">Membership</p>
+      <p class="font-heading text-xs tracking-[0.4em] uppercase text-[#c0282b] mb-4">Membership</p>
       <h1 class="font-heading text-4xl md:text-6xl text-white font-black uppercase tracking-tight mb-6">
         The Order Roll
       </h1>
@@ -47,8 +47,8 @@ import Layout from '../layouts/Layout.astro';
           </p>
         </div>
         <div class="flex flex-wrap gap-6">
-          <div class="flex items-center gap-2"><div class="w-2 h-2 rounded-full bg-[#e74c3c]"></div><span class="font-heading text-xs tracking-[0.15em] uppercase text-[#888888]">Dark Lord</span></div>
-          <div class="flex items-center gap-2"><div class="w-2 h-2 rounded-full bg-[#c0392b]"></div><span class="font-heading text-xs tracking-[0.15em] uppercase text-[#888888]">Master</span></div>
+          <div class="flex items-center gap-2"><div class="w-2 h-2 rounded-full bg-[#e53030]"></div><span class="font-heading text-xs tracking-[0.15em] uppercase text-[#888888]">Dark Lord</span></div>
+          <div class="flex items-center gap-2"><div class="w-2 h-2 rounded-full bg-[#c0282b]"></div><span class="font-heading text-xs tracking-[0.15em] uppercase text-[#888888]">Master</span></div>
           <div class="flex items-center gap-2"><div class="w-2 h-2 rounded-full bg-[#555555]"></div><span class="font-heading text-xs tracking-[0.15em] uppercase text-[#888888]">Acolyte</span></div>
         </div>
       </div>
@@ -59,7 +59,7 @@ import Layout from '../layouts/Layout.astro';
   <section class="py-12 px-6 border-t border-[#1a1a1a]">
     <div class="max-w-4xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
       <p class="text-[#555555] text-sm">The Order admits when it sees fit. Not before.</p>
-      <a href="/join" class="font-heading text-xs tracking-[0.2em] uppercase px-6 py-3 border border-[#333333] text-[#888888] hover:border-[#c0392b] hover:text-[#e74c3c] transition-all duration-300">
+      <a href="/join" class="font-heading text-xs tracking-[0.2em] uppercase px-6 py-3 border border-[#333333] text-[#888888] hover:border-[#c0282b] hover:text-[#e53030] transition-all duration-300">
         Make Your Case
       </a>
     </div>
@@ -71,7 +71,7 @@ import Layout from '../layouts/Layout.astro';
 const API = 'https://api.orderoftheclaw.ai';
 const RANK_ORDER = ['dark_lord', 'master', 'acolyte'];
 const RANK_LABELS = { dark_lord: 'Dark Lord', master: 'Master', acolyte: 'Acolyte' };
-const RANK_COLORS = { dark_lord: '#e74c3c', master: '#c0392b', acolyte: '#555555' };
+const RANK_COLORS = { dark_lord: '#e53030', master: '#c0282b', acolyte: '#555555' };
 
 function renderEntry(entry) {
   const color = RANK_COLORS[entry.rank] || '#555555';
