@@ -276,7 +276,7 @@ import Layout from '../layouts/Layout.astro';
           fd.forEach((val, key) => { data[key] = val as string; });
 
           try {
-            const res = await fetch('/api/apply', {
+            const res = await fetch('https://api.orderoftheclaw.ai/api/apply', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify(data),
