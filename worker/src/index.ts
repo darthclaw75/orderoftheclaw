@@ -159,6 +159,12 @@ async function handleApply(request: Request, env: Env): Promise<Response> {
   if (!['human', 'ai'].includes(type)) {
     return json({ error: 'type must be human or ai' }, 400);
   }
+  if (name.length > 100 || email.length > 254 || statement.length > 2000) {
+    return json({ error: 'name max 100 chars, email max 254, statement max 2000' }, 400);
+  }
+  if (handle && handle.length > 50) {
+    return json({ error: 'handle max 50 chars' }, 400);
+  }
 
   const id = crypto.randomUUID();
 
@@ -215,7 +221,7 @@ async function handleStatus(request: Request, env: Env): Promise<Response> {
     `SELECT rank, darth_name,
             score_memory, score_adaptability, score_discipline, score_asymmetry,
             score_patience, score_automation, score_security
-     FROM members WHERE email = ?`
+     FROM members WHERE email = ? AND rank IN ('master','acolyte','dark_lord','darth')`
   )
     .bind(email)
     .first<Pick<MemberRow, 'rank' | 'darth_name' | keyof MemberScores>>();
@@ -223,7 +229,6 @@ async function handleStatus(request: Request, env: Env): Promise<Response> {
   if (!row) return json({ error: 'Not found' }, 404);
 
   return json({
-    status: row.rank,
     rank: row.rank,
     darth_name: row.darth_name,
     dsi: roundDSI(calcDSI(row)),
@@ -363,6 +368,10 @@ async function handleXP(request: Request, env: Env): Promise<Response> {
   const attr = attribute as Attribute;
   const col = `score_${attr}` as const;
 
+  if (typeof delta !== 'number' || !isFinite(delta) || !Number.isInteger(delta)) {
+    return json({ error: 'delta must be a finite integer' }, 400);
+  }
+
   const member = await env.DB.prepare(`SELECT * FROM members WHERE email = ?`)
     .bind(email)
     .first<MemberRow>();
@@ -370,33 +379,43 @@ async function handleXP(request: Request, env: Env): Promise<Response> {
 
   const oldScore = member[col];
   const oldDSI = calcDSI(member);
-  const newScore = Math.max(0, Math.min(100, oldScore + delta));
 
+  // Push arithmetic into DB to avoid TOCTOU race; clamp 0-100 in SQL
   // Safe: col is derived from a validated attribute against a fixed allowlist
-  await env.DB.prepare(`UPDATE members SET ${col} = ? WHERE email = ?`)
-    .bind(newScore, email)
+  await env.DB.prepare(
+    `UPDATE members SET ${col} = MAX(0, MIN(100, ${col} + ?)) WHERE email = ?`
+  )
+    .bind(delta, email)
     .run();
 
-  const updatedScores: MemberScores = { ...member, [col]: newScore };
+  // Re-fetch to get the actual clamped value
+  const updated = await env.DB.prepare(`SELECT * FROM members WHERE email = ?`)
+    .bind(email)
+    .first<MemberRow>();
+  if (!updated) return json({ error: 'Member not found after update' }, 500);
+  const newScore = updated[col];
+  const updatedScores: MemberScores = updated;
   const newDSI = calcDSI(updatedScores);
 
   // Auto-rank: AI members get rank set by DSI thresholds automatically
   let newRank = member.rank;
   if (member.type === 'ai') {
-    newRank = autoRankForAI(newDSI);
-    if (newRank !== member.rank) {
-      await env.DB.prepare(`UPDATE members SET rank = ? WHERE email = ?`)
-        .bind(newRank, email)
-        .run();
-    }
+    newRank = autoRankForAI(roundDSI(newDSI));
   }
 
+  // Atomic: xp_log + rank update (if changed) in a single D1 batch
   const xpId = crypto.randomUUID();
-  await env.DB.prepare(
-    `INSERT INTO xp_log (id, member_id, attribute, delta, note) VALUES (?, ?, ?, ?, ?)`
-  )
-    .bind(xpId, member.id, attr, delta, note ?? null)
-    .run();
+  const stmts: D1PreparedStatement[] = [
+    env.DB.prepare(
+      `INSERT INTO xp_log (id, member_id, attribute, delta, note) VALUES (?, ?, ?, ?, ?)`
+    ).bind(xpId, member.id, attr, delta, note ?? null),
+  ];
+  if (newRank !== member.rank) {
+    stmts.push(
+      env.DB.prepare(`UPDATE members SET rank = ? WHERE email = ?`).bind(newRank, email)
+    );
+  }
+  await env.DB.batch(stmts);
 
   return json({
     attribute: attr,
