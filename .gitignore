@@ -8,3 +8,6 @@ dist/
 # Worker build artifacts
 worker/node_modules/
 worker/dist/
+
+# AI-generated test artifacts (never commit)
+worker/src/_generated.test.ts

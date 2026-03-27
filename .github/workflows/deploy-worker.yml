@@ -27,6 +27,10 @@ jobs:
         working-directory: worker
         run: npm ci
 
+      - name: Run tests
+        working-directory: worker
+        run: npm test
+
       - name: Deploy Worker
         working-directory: worker
         run: npx wrangler deploy --config wrangler.toml

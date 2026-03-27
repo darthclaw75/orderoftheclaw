@@ -1,0 +1,165 @@
+#!/usr/bin/env bash
+# pre-push hook — runs code review + QA agents before any push
+# Blocks on blocking code review issues or test failures.
+# Nitpicks are printed but never block.
+# Both agents run in parallel; loop until clean or user aborts.
+
+set -euo pipefail
+
+REPO_ROOT="$(git rev-parse --show-toplevel)"
+SCRIPTS="$REPO_ROOT/scripts"
+MAX_LOOPS=3
+LOOP=0
+
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+CYAN='\033[0;36m'
+BOLD='\033[1m'
+NC='\033[0m'
+
+echo ""
+echo -e "${BOLD}⚔️  Order of the Claw — Pre-Push Gate${NC}"
+echo -e "${CYAN}Running code review + QA agents...${NC}"
+echo ""
+
+DIFF_FILE=$(mktemp /tmp/prepush-diff.XXXXXX)
+REVIEW_OUT=$(mktemp /tmp/prepush-review.XXXXXX)
+QA_OUT=$(mktemp /tmp/prepush-qa.XXXXXX)
+PATCH_FILE=$(mktemp /tmp/prepush-patch.XXXXXX)
+
+cleanup() {
+  rm -f "$DIFF_FILE" "$REVIEW_OUT" "$QA_OUT" "$PATCH_FILE"
+}
+trap cleanup EXIT
+
+# Get the diff being pushed (read refs from stdin)
+DIFF_BASE=""
+while read local_ref local_sha remote_ref remote_sha; do
+  if [[ "$remote_sha" == "0000000000000000000000000000000000000000" ]]; then
+    DIFF_BASE="origin/main"
+  else
+    DIFF_BASE="$remote_sha"
+  fi
+done
+
+[[ -z "$DIFF_BASE" ]] && DIFF_BASE="HEAD~1"
+
+git diff "$DIFF_BASE"...HEAD > "$DIFF_FILE" 2>/dev/null || git diff HEAD~1 > "$DIFF_FILE" 2>/dev/null
+
+DIFF_SIZE=$(wc -c < "$DIFF_FILE" | tr -d ' ')
+if [[ "$DIFF_SIZE" -lt 10 ]]; then
+  echo -e "${GREEN}✅ Nothing to review — diff is empty${NC}"
+  exit 0
+fi
+
+echo -e "  Diff: ${DIFF_SIZE} bytes | Base: ${DIFF_BASE}"
+echo ""
+
+while [[ $LOOP -lt $MAX_LOOPS ]]; do
+  LOOP=$((LOOP + 1))
+  echo -e "${BOLD}--- Round $LOOP / $MAX_LOOPS ---${NC}"
+
+  git diff "$DIFF_BASE"...HEAD > "$DIFF_FILE" 2>/dev/null || git diff HEAD~1 > "$DIFF_FILE" 2>/dev/null
+
+  # Run both agents in parallel
+  echo -e "  ${CYAN}⟳ Code review + QA running in parallel...${NC}"
+  "$SCRIPTS/review-agent.sh" "$DIFF_FILE" "$REVIEW_OUT" &
+  REVIEW_PID=$!
+  "$SCRIPTS/qa-agent.sh" "$REPO_ROOT" "$DIFF_FILE" "$QA_OUT" &
+  QA_PID=$!
+
+  REVIEW_EXIT=0; QA_EXIT=0
+  wait $REVIEW_PID || REVIEW_EXIT=$?
+  wait $QA_PID    || QA_EXIT=$?
+
+  echo ""
+
+  # Code review results
+  echo -e "${BOLD}📋 Code Review:${NC}"
+  # Guard: if output doesn't contain expected sections, fail safe (don't silently pass)
+  if ! grep -q "## BLOCKING ISSUES\|## VERDICT" "$REVIEW_OUT" 2>/dev/null; then
+    echo -e "  ${RED}⚠️  Review agent produced malformed output — failing safe${NC}"
+    cat "$REVIEW_OUT" | sed 's/^/    /' | head -10
+    exit 1
+  fi
+
+  BLOCKING=$(awk '/## BLOCKING ISSUES/{found=1; next} /## NITPICKS/{found=0} found' "$REVIEW_OUT" | grep -v "^$" | head -20)
+  NITPICKS=$(awk '/## NITPICKS/{found=1; next} /## VERDICT/{found=0} found' "$REVIEW_OUT" | grep -v "^$" | head -10)
+
+  if [[ -n "$NITPICKS" && "$NITPICKS" != "None" ]]; then
+    echo -e "  ${YELLOW}💬 Nitpicks (non-blocking):${NC}"
+    echo "$NITPICKS" | sed 's/^/    /'
+    echo ""
+  fi
+
+  if [[ $REVIEW_EXIT -ne 0 && -n "$BLOCKING" && "$BLOCKING" != "None" ]]; then
+    echo -e "  ${RED}🚫 Blocking issues:${NC}"
+    echo "$BLOCKING" | sed 's/^/    /'
+  else
+    REVIEW_EXIT=0
+    echo -e "  ${GREEN}✅ No blocking issues${NC}"
+  fi
+
+  echo ""
+
+  # QA results
+  echo -e "${BOLD}🧪 QA / Tests:${NC}"
+  grep -E "✅|❌|⚠️|VERDICT|Error" "$QA_OUT" | sed 's/^/  /' | head -20
+
+  echo ""
+
+  # Gate decision
+  if [[ $REVIEW_EXIT -eq 0 && $QA_EXIT -eq 0 ]]; then
+    echo -e "${GREEN}${BOLD}✅ GATE PASSED — pushing to remote${NC}"
+    echo ""
+    exit 0
+  fi
+
+  echo -e "${RED}${BOLD}⛔ GATE FAILED${NC}"
+  [[ $REVIEW_EXIT -ne 0 ]] && echo -e "  ${RED}• Code review: blocking issues${NC}"
+  [[ $QA_EXIT -ne 0 ]]     && echo -e "  ${RED}• QA: test failures${NC}"
+  echo ""
+
+  if [[ $LOOP -ge $MAX_LOOPS ]]; then
+    echo -e "${RED}Max fix rounds ($MAX_LOOPS) reached. Fix manually and re-push.${NC}"
+    echo -e "${YELLOW}Bypass (emergency only): git push --no-verify${NC}"
+    echo ""
+    exit 1
+  fi
+
+  echo -e "${CYAN}⟳ Attempting auto-fix with Claude Code (round $LOOP of $((MAX_LOOPS-1)))...${NC}"
+  echo ""
+
+  {
+    echo "=== CODE REVIEW FINDINGS ==="
+    cat "$REVIEW_OUT"
+    echo ""
+    echo "=== QA FINDINGS ==="
+    cat "$QA_OUT"
+  } > "$PATCH_FILE"
+
+  # Auto-fix: Claude edits files directly. No staging — developer reviews before re-push.
+  claude --permission-mode bypassPermissions --print "
+Fix the blocking issues below. Edit only the files that need to change.
+Do NOT run git commands, do NOT stage or commit anything.
+Make the minimal changes needed to resolve each blocking issue.
+
+Repository: $REPO_ROOT
+
+Issues:
+$(cat "$PATCH_FILE")
+
+Diff being pushed:
+$(cat "$DIFF_FILE" | head -3000)
+" 2>&1 | sed 's/^/    /'
+
+  echo ""
+  echo -e "${YELLOW}Auto-fix complete. Review changes with: git diff${NC}"
+  echo -e "${YELLOW}Stage and amend manually, then re-push.${NC}"
+  echo ""
+  # Exit 1 to abort this push — developer must review fixes and re-push
+  exit 1
+done
+
+exit 1
