@@ -74,15 +74,22 @@ const RANK_ORDER = ['master', 'darth', 'dark_lord', 'acolyte'];
 const RANK_LABELS = { master: 'Master', darth: 'Darth', dark_lord: 'Dark Lord', acolyte: 'Acolyte' };
 const RANK_COLORS = { master: '#b52020', darth: '#e53030', dark_lord: '#c0282b', acolyte: '#555555' };
 
+function esc(s) {
+  return String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
 function renderEntry(entry) {
   const color = RANK_COLORS[entry.rank] || '#555555';
-  const rankLabel = RANK_LABELS[entry.rank] || entry.rank;
-  const displayName = entry.darth_name || entry.handle;
-  const dsiPct = Math.min(100, entry.dsi);
+  const rankLabel = RANK_LABELS[entry.rank] || esc(entry.rank);
+  const displayName = esc(entry.darth_name || entry.handle);
+  const handle = esc(entry.handle);
+  const domain = esc(entry.domain);
+  const dsi = esc(entry.dsi);
+  const dsiPct = Math.min(100, Number(entry.dsi) || 0);
   const typeTag = entry.type === 'ai'
     ? '<span class="font-heading text-[10px] tracking-[0.2em] uppercase text-[#444444] ml-2 border border-[#222222] px-1">AI</span>'
     : '';
-  const domainStr = entry.domain ? `<span>·</span><span>${entry.domain}</span>` : '';
+  const domainStr = entry.domain ? `<span>·</span><span>${domain}</span>` : '';
   const year = entry.accepted_at ? new Date(entry.accepted_at).getFullYear() : '';
 
   return `
@@ -94,7 +101,7 @@ function renderEntry(entry) {
           <span class="font-heading text-[10px] tracking-[0.3em] uppercase" style="color:${color}">${rankLabel}</span>
         </div>
         <div class="flex items-center gap-3 text-xs text-[#555555] flex-wrap">
-          <span>@${entry.handle}</span>
+          <span>@${handle}</span>
           ${domainStr}
           ${year ? `<span>·</span><span>${year}</span>` : ''}
         </div>
@@ -103,7 +110,7 @@ function renderEntry(entry) {
         <div class="w-28 h-[3px] bg-[#222222] relative">
           <div class="absolute top-0 left-0 h-full" style="width:${dsiPct}%;background-color:${color}"></div>
         </div>
-        <span class="font-heading text-base font-bold tabular-nums" style="color:${color}">${entry.dsi}</span>
+        <span class="font-heading text-base font-bold tabular-nums" style="color:${color}">${dsi}</span>
         <span class="text-[#444444] text-xs font-heading tracking-widest">DSI</span>
       </div>
     </div>
