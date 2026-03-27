@@ -1,0 +1,11 @@
+name = "orderoftheclaw-api"
+main = "src/index.ts"
+compatibility_date = "2024-01-01"
+
+[vars]
+# ADMIN_TOKEN and SLACK_WEBHOOK_URL are set as secrets via wrangler secret or CF dashboard
+
+[[d1_databases]]
+binding = "DB"
+database_name = "orderoftheclaw"
+database_id = "657b80c5-8e42-4e0b-bad9-ca6c7aa228e0"
