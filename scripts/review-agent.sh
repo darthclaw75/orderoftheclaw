@@ -1,68 +1,87 @@
 #!/usr/bin/env bash
 # review-agent.sh — Adversarial code review via Claude
-# Usage: review-agent.sh <diff_file> <output_file>
-# Exit 0 = pass (only nitpicks), exit 1 = blocking issues found
+# Works on any codebase. Analyzes the diff + repo context.
+# Usage: review-agent.sh <repo_root> <diff_file> <output_file>
+# Exit 0 = pass (only nitpicks or clean), exit 1 = blocking issues found
 
-DIFF_FILE="$1"
-OUTPUT_FILE="$2"
+REPO_ROOT="$1"
+DIFF_FILE="$2"
+OUTPUT_FILE="$3"
 
-if [[ -z "$DIFF_FILE" || -z "$OUTPUT_FILE" ]]; then
-  echo "Usage: review-agent.sh <diff_file> <output_file>" >&2
-  exit 2
-fi
+[[ -z "$REPO_ROOT" || -z "$DIFF_FILE" || -z "$OUTPUT_FILE" ]] && {
+  echo "Usage: review-agent.sh <repo_root> <diff_file> <output_file>" >&2; exit 2
+}
 
-DIFF_CONTENT=$(cat "$DIFF_FILE")
-CHAR_COUNT=${#DIFF_CONTENT}
-
-if [[ $CHAR_COUNT -lt 10 ]]; then
-  echo "PASS: no meaningful diff" > "$OUTPUT_FILE"
+if [[ $(wc -c < "$DIFF_FILE") -lt 10 ]]; then
+  echo "## VERDICT: PASS" > "$OUTPUT_FILE"
   exit 0
 fi
 
+# Build repo context snapshot for the reviewer
+CONTEXT=$(cd "$REPO_ROOT" && {
+  echo "=== Repo: $(basename "$PWD") ==="
+  echo "--- Files changed ---"
+  git diff --name-only HEAD~1 2>/dev/null | head -30
+  echo ""
+  echo "--- package.json / pyproject.toml / go.mod / Cargo.toml / pom.xml ---"
+  for f in package.json pyproject.toml go.mod Cargo.toml pom.xml composer.json Gemfile; do
+    [[ -f "$f" ]] && { echo "[$f]"; head -20 "$f"; echo ""; }
+  done
+  echo "--- README (first 30 lines) ---"
+  [[ -f README.md ]] && head -30 README.md || [[ -f README.rst ]] && head -30 README.rst || echo "(none)"
+})
+
 claude --permission-mode bypassPermissions --print "
-You are an adversarial code reviewer. You are opinionated, exacting, and do not let bad code through.
+You are an adversarial code reviewer. Opinionated, exacting, no bad code passes.
 
-Review the following git diff. Your job:
+Repo context:
+$CONTEXT
 
-1. Identify BLOCKING issues — things that MUST be fixed before pushing:
-   - Security vulnerabilities (injection, auth bypass, data exposure)
-   - Correctness bugs (wrong logic, off-by-one, null dereference, race conditions)
-   - Data loss risks
-   - Breaking API changes without versioning
-   - TypeScript type unsafety that could cause runtime errors
-   - Unhandled error paths in critical code
+Review the following git diff. Identify:
 
-2. Identify NITPICKS — things you'd prefer fixed but won't block on:
-   - Style preferences
-   - Minor naming inconsistencies
-   - Small optimizations that don't affect correctness
-   - Code organization suggestions
+BLOCKING ISSUES — must be fixed before pushing:
+- Security vulnerabilities (injection, auth bypass, data exposure, secret leaks)
+- Correctness bugs (wrong logic, off-by-one, null dereference, race conditions, data loss)
+- Breaking API changes without versioning
+- Runtime type errors or null pointer exceptions
+- Unhandled error paths in critical code paths
+- Dependency changes that introduce known vulnerabilities
+
+NITPICKS — print but never block:
+- Style preferences
+- Minor naming issues
+- Small non-critical optimizations
+- Code organization suggestions
+- Redundant code
 
 Rules:
-- Be opinionated. If something is wrong, say so directly.
-- Do NOT invent problems. Only flag real issues in the diff.
-- If there are no blocking issues, say VERDICT: PASS clearly.
-- If there are blocking issues, say VERDICT: BLOCK clearly and list each with file:line.
+- Be adversarial. Assume this code will be attacked.
+- Only flag real issues in the diff. Do not invent problems.
+- Be specific: file name and approximate line number for each issue.
+- VERDICT: PASS if zero blocking issues. VERDICT: BLOCK if any blocking issues.
 
-Diff to review:
+Diff:
 \`\`\`diff
-$(cat "$DIFF_FILE" | head -2000)
+$(cat "$DIFF_FILE" | head -3000)
 \`\`\`
 
-Format your response EXACTLY as:
+Respond EXACTLY in this format:
 
 ## BLOCKING ISSUES
-(list each issue, or 'None')
+(list each blocking issue with file:line, or write 'None')
 
 ## NITPICKS
-(list each nitpick, or 'None')
+(list each nitpick, or write 'None')
 
 ## VERDICT: [PASS|BLOCK]
 " > "$OUTPUT_FILE" 2>&1
 
-# Parse verdict
-if grep -q "VERDICT: BLOCK" "$OUTPUT_FILE"; then
+# Validate output has expected structure — fail safe if malformed
+if ! grep -q "## VERDICT" "$OUTPUT_FILE"; then
+  echo "## BLOCKING ISSUES" >> "$OUTPUT_FILE"
+  echo "Review agent produced malformed output — failing safe" >> "$OUTPUT_FILE"
+  echo "## VERDICT: BLOCK" >> "$OUTPUT_FILE"
   exit 1
-else
-  exit 0
 fi
+
+grep -q "VERDICT: BLOCK" "$OUTPUT_FILE" && exit 1 || exit 0
