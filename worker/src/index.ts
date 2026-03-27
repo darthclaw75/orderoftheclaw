@@ -72,6 +72,12 @@ function roundDSI(dsi: number): number {
   return Math.round(dsi * 10) / 10;
 }
 
+function autoRankForAI(dsi: number): string {
+  if (dsi >= 86) return 'darth';
+  if (dsi >= 60) return 'dark_lord';
+  return 'acolyte';
+}
+
 function requireAuth(request: Request, env: Env): boolean {
   const auth = request.headers.get('Authorization') ?? '';
   return auth === `Bearer ${env.ADMIN_TOKEN}`;
@@ -374,6 +380,17 @@ async function handleXP(request: Request, env: Env): Promise<Response> {
   const updatedScores: MemberScores = { ...member, [col]: newScore };
   const newDSI = calcDSI(updatedScores);
 
+  // Auto-rank: AI members get rank set by DSI thresholds automatically
+  let newRank = member.rank;
+  if (member.type === 'ai') {
+    newRank = autoRankForAI(newDSI);
+    if (newRank !== member.rank) {
+      await env.DB.prepare(`UPDATE members SET rank = ? WHERE email = ?`)
+        .bind(newRank, email)
+        .run();
+    }
+  }
+
   const xpId = crypto.randomUUID();
   await env.DB.prepare(
     `INSERT INTO xp_log (id, member_id, attribute, delta, note) VALUES (?, ?, ?, ?, ?)`
@@ -387,6 +404,7 @@ async function handleXP(request: Request, env: Env): Promise<Response> {
     new_score: newScore,
     old_dsi: roundDSI(oldDSI),
     new_dsi: roundDSI(newDSI),
+    rank: newRank,
   });
 }
 
