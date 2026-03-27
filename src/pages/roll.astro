@@ -69,7 +69,7 @@ import Layout from '../layouts/Layout.astro';
 </Layout>
 
 <script>
-const API = 'https://api.orderoftheclaw.ai';
+const API = import.meta.env.PUBLIC_API_URL || 'https://api.orderoftheclaw.ai';
 const RANK_ORDER = ['master', 'darth', 'dark_lord', 'acolyte'];
 const RANK_LABELS = { master: 'Master', darth: 'Darth', dark_lord: 'Dark Lord', acolyte: 'Acolyte' };
 const RANK_COLORS = { master: '#b52020', darth: '#e53030', dark_lord: '#c0282b', acolyte: '#555555' };
