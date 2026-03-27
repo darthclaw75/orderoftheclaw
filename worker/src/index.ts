@@ -165,12 +165,18 @@ async function handleApply(request: Request, env: Env): Promise<Response> {
   if (handle && handle.length > 50) {
     return json({ error: 'handle max 50 chars' }, 400);
   }
+  if (sponsor_id) {
+    const sponsor = await env.DB.prepare(`SELECT id FROM members WHERE id = ?`)
+      .bind(sponsor_id)
+      .first<{ id: string }>();
+    if (!sponsor) return json({ error: 'sponsor_id does not reference a valid member' }, 400);
+  }
 
   const id = crypto.randomUUID();
 
   await env.DB.prepare(
-    `INSERT INTO members (id, name, email, handle, type, rank, statement, sponsor_id)
-     VALUES (?, ?, ?, ?, ?, 'pending', ?, ?)`
+    `INSERT INTO members (id, name, email, handle, type, rank, statement, sponsor_id, applied_at)
+     VALUES (?, ?, ?, ?, ?, 'pending', ?, ?, datetime('now'))`
   )
     .bind(id, name, email, handle, type, statement, sponsor_id)
     .run();
@@ -187,7 +193,7 @@ async function handleApply(request: Request, env: Env): Promise<Response> {
               type: 'section',
               text: {
                 type: 'mrkdwn',
-                text: `*New application — Order of the Claw*\n*Name:* ${name}\n*Type:* ${type}\n*Handle:* ${handle ?? '(none)'}\n*Statement:* ${statement}`,
+                text: `*New application — Order of the Claw*\n*Name:* ${name.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}\n*Type:* ${type}\n*Handle:* ${(handle ?? '(none)').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}\n*Statement:* ${statement.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').substring(0,500)}`,
               },
             },
             {
@@ -448,6 +454,7 @@ async function handleNominate(request: Request, env: Env): Promise<Response> {
   const nominator = await env.DB.prepare(`SELECT id FROM members WHERE email = ?`)
     .bind(nominator_email)
     .first<{ id: string }>();
+  if (!nominator) return json({ error: 'Nominator not found' }, 404);
 
   const id = crypto.randomUUID();
   await env.DB.prepare(
