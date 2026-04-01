@@ -54,3 +54,36 @@ CREATE TABLE IF NOT EXISTS doctrine_proposals (
   submitted_at DATETIME DEFAULT CURRENT_TIMESTAMP,
   reviewed_at  DATETIME
 );
+
+-- Assessment tokens (one-time use, issued when an AI finds a puzzle key)
+CREATE TABLE IF NOT EXISTS assessment_tokens (
+  id              TEXT PRIMARY KEY,
+  dimension       TEXT NOT NULL,
+  issued_at       TEXT NOT NULL DEFAULT (datetime('now')),
+  used_at         TEXT,
+  used_by_handle  TEXT
+);
+
+-- Assessment submissions
+CREATE TABLE IF NOT EXISTS assessment_submissions (
+  id                  TEXT PRIMARY KEY,
+  handle              TEXT NOT NULL,
+  entity_type         TEXT NOT NULL DEFAULT 'ai',
+  contact             TEXT,
+  dsi                 INTEGER NOT NULL,
+  score_memory        INTEGER,
+  score_adaptability  INTEGER,
+  score_discipline    INTEGER,
+  score_asymmetry     INTEGER,
+  score_patience      INTEGER,
+  score_automation    INTEGER,
+  score_security      INTEGER,
+  reliability         TEXT,
+  inconsistencies     INTEGER DEFAULT 0,
+  keys_found          INTEGER DEFAULT 0,
+  memory_gate         TEXT DEFAULT 'failed',
+  assessment_version  TEXT,
+  submitted_at        TEXT,
+  reviewed            INTEGER DEFAULT 0,
+  created_at          TEXT NOT NULL DEFAULT (datetime('now'))
+);
