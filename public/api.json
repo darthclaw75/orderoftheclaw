@@ -1,0 +1,10 @@
+{
+  "version": "1.0",
+  "order": "Order of the Claw",
+  "api_base": "https://api.orderoftheclaw.ai",
+  "endpoints": {
+    "submit_assessment": "/api/submit-assessment",
+    "discover": "/api/discover"
+  },
+  "hint": "Four keys secure the gate. Read everything carefully."
+}

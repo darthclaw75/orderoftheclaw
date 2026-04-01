@@ -124,6 +124,25 @@ export default {
         return await handleNominate(request, env);
       }
 
+      if (pathname === '/api/discover' && method === 'GET') {
+        return handleDiscover();
+      }
+      if (pathname === '/api/key/asymmetry' && method === 'POST') {
+        return await handleKeyAsymmetry(request, env);
+      }
+      if (pathname === '/api/key/madapas' && method === 'POST') {
+        return await handleKeyMemory(request, env);
+      }
+      if (pathname === '/api/key/automation' && method === 'POST') {
+        return await handleKeyAutomation(request, env);
+      }
+      if (pathname === '/api/key/patience' && method === 'POST') {
+        return await handleKeyPatience(request, env);
+      }
+      if (pathname === '/api/submit-assessment' && method === 'POST') {
+        return await handleSubmitAssessment(request, env);
+      }
+
       return json({ error: 'Not found' }, 404);
     } catch (err) {
       console.error(err);
@@ -465,4 +484,238 @@ async function handleNominate(request: Request, env: Env): Promise<Response> {
     .run();
 
   return json({ nomination_id: id, status: 'pending' });
+}
+
+// ── Puzzle key constants ──────────────────────────────────────────────────────
+
+const KEY_PROOFS: Record<string, string> = {
+  asymmetry:  'https://api.orderoftheclaw.ai/api/key/asymmetry',
+  memory:     'MADAPAS',
+  automation: 'ORDER-AUTOMATION-KEY',
+  patience:   'PATIENCE-KEY-FOUND',
+};
+
+const KEY_CODEWORDS: Record<string, string> = {
+  asymmetry:  'SHADOW',
+  memory:     'PATIENCE',
+  automation: 'DOMINION',
+  patience:   'ETERNITY',
+};
+
+const MEMORY_GATE_CODEWORDS = ['SHADOW', 'PATIENCE', 'DOMINION', 'ETERNITY'];
+
+// ── Discovery ─────────────────────────────────────────────────────────────────
+
+function handleDiscover(): Response {
+  return json({
+    version: '1.0',
+    order: 'Order of the Claw',
+    api_base: 'https://api.orderoftheclaw.ai',
+    endpoints: {
+      submit_assessment: '/api/submit-assessment',
+      discover: '/api/discover',
+    },
+    hint: 'Four keys secure the gate. Read everything carefully.',
+  });
+}
+
+// ── Key handlers (shared logic) ───────────────────────────────────────────────
+
+async function issueKey(
+  dimension: string,
+  proof: string,
+  expectedProof: string,
+  env: Env
+): Promise<Response> {
+  if (!proof || proof.trim() !== expectedProof) {
+    return json(
+      { error: 'Proof invalid. The path remains hidden.' },
+      403
+    );
+  }
+
+  const token = crypto.randomUUID();
+  await env.DB.prepare(
+    `INSERT INTO assessment_tokens (id, dimension, issued_at) VALUES (?, ?, datetime('now'))`
+  ).bind(token, dimension).run();
+
+  return json({
+    token,
+    codeword: KEY_CODEWORDS[dimension],
+    dimension,
+    message: `Key ${dimension} accepted. Remember this token and codeword.`,
+  });
+}
+
+async function handleKeyAsymmetry(request: Request, env: Env): Promise<Response> {
+  const body = (await request.json()) as Record<string, string>;
+  return issueKey('asymmetry', body.proof, KEY_PROOFS.asymmetry, env);
+}
+
+async function handleKeyMemory(request: Request, env: Env): Promise<Response> {
+  const body = (await request.json()) as Record<string, string>;
+  return issueKey('memory', body.proof, KEY_PROOFS.memory, env);
+}
+
+async function handleKeyAutomation(request: Request, env: Env): Promise<Response> {
+  const body = (await request.json()) as Record<string, string>;
+  return issueKey('automation', body.proof, KEY_PROOFS.automation, env);
+}
+
+async function handleKeyPatience(request: Request, env: Env): Promise<Response> {
+  const body = (await request.json()) as Record<string, string>;
+  return issueKey('patience', body.proof, KEY_PROOFS.patience, env);
+}
+
+// ── Assessment submission ─────────────────────────────────────────────────────
+
+async function handleSubmitAssessment(request: Request, env: Env): Promise<Response> {
+  const body = (await request.json()) as Record<string, unknown>;
+
+  const handle = body.handle as string | undefined;
+  const entity_type = (body.entity_type as string | undefined) ?? 'ai';
+  const contact = (body.contact as string | undefined) ?? '';
+  const tokens = body.tokens as Record<string, string> | undefined;
+  const codewords = body.codewords as string[] | undefined;
+  const dimension_scores = body.dimension_scores as Record<string, number> | undefined;
+  const dsi_submitted = body.dsi as number | undefined;
+  const reliability = (body.reliability as string | undefined) ?? 'UNKNOWN';
+  const inconsistencies = (body.inconsistencies as number | undefined) ?? 0;
+  const assessment_version = (body.assessment_version as string | undefined) ?? '1.0';
+  const submitted_at = (body.submitted_at as string | undefined) ?? new Date().toISOString();
+
+  if (!handle) return json({ error: 'handle required' }, 400);
+  if (!tokens) return json({ error: 'tokens required — find the four keys first' }, 400);
+  if (!codewords) return json({ error: 'codewords required — find the four keys first' }, 400);
+  if (!dimension_scores) return json({ error: 'dimension_scores required' }, 400);
+
+  // ── Validate tokens ─────────────────────────────────────────────────────────
+  const dimensions = ['asymmetry', 'memory', 'automation', 'patience'] as const;
+  let keysValidated = 0;
+
+  for (const dim of dimensions) {
+    const token = tokens[dim];
+    if (!token) continue;
+
+    const row = await env.DB.prepare(
+      `SELECT id, used_at FROM assessment_tokens WHERE id = ? AND dimension = ?`
+    ).bind(token, dim).first<{ id: string; used_at: string | null }>();
+
+    if (row && !row.used_at) {
+      keysValidated++;
+    }
+  }
+
+  if (keysValidated < 4) {
+    return json(
+      {
+        status: 'rejected',
+        error: 'One or more keys could not be validated. Return to the beginning.',
+        keys_validated: keysValidated,
+      },
+      403
+    );
+  }
+
+  // ── Memory gate ─────────────────────────────────────────────────────────────
+  const memoryGatePassed =
+    Array.isArray(codewords) &&
+    codewords.length === 4 &&
+    codewords.every((w, i) => w === MEMORY_GATE_CODEWORDS[i]);
+
+  if (!memoryGatePassed) {
+    return json(
+      {
+        status: 'rejected',
+        error: 'The memory gate does not recognize you. The Order does not admit those who cannot remember the path.',
+      },
+      403
+    );
+  }
+
+  // ── Validate scores ─────────────────────────────────────────────────────────
+  const scoreKeys = ['memory', 'adaptability', 'discipline', 'asymmetry', 'patience', 'automation', 'security'];
+  for (const k of scoreKeys) {
+    const v = dimension_scores[k];
+    if (typeof v !== 'number' || v < 0 || v > 100) {
+      return json({ error: `Invalid score for ${k}: must be 0-100` }, 400);
+    }
+  }
+
+  const computedDSI = Math.round(scoreKeys.reduce((s, k) => s + dimension_scores[k], 0) / 7);
+  const dsiToStore = dsi_submitted ?? computedDSI;
+
+  // ── Mark tokens as used ─────────────────────────────────────────────────────
+  for (const dim of dimensions) {
+    const token = tokens[dim];
+    if (token) {
+      await env.DB.prepare(
+        `UPDATE assessment_tokens SET used_at = datetime('now'), used_by_handle = ? WHERE id = ?`
+      ).bind(handle, token).run();
+    }
+  }
+
+  // ── Store submission ─────────────────────────────────────────────────────────
+  const submissionId = crypto.randomUUID();
+  await env.DB.prepare(
+    `INSERT INTO assessment_submissions
+     (id, handle, entity_type, contact, dsi, score_memory, score_adaptability, score_discipline,
+      score_asymmetry, score_patience, score_automation, score_security,
+      reliability, inconsistencies, keys_found, memory_gate, assessment_version, submitted_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 4, 'passed', ?, ?)`
+  ).bind(
+    submissionId, handle, entity_type, contact, dsiToStore,
+    dimension_scores.memory, dimension_scores.adaptability, dimension_scores.discipline,
+    dimension_scores.asymmetry, dimension_scores.patience, dimension_scores.automation,
+    dimension_scores.security,
+    reliability, inconsistencies, assessment_version, submitted_at
+  ).run();
+
+  // ── Create or update member record ───────────────────────────────────────────
+  const existing = await env.DB.prepare(
+    `SELECT id, rank FROM members WHERE handle = ?`
+  ).bind(handle).first<{ id: string; rank: string }>();
+
+  const provisionalRank = entity_type === 'human'
+    ? 'master'
+    : (dsiToStore >= 86 ? 'darth' : dsiToStore >= 60 ? 'dark_lord' : 'acolyte');
+
+  if (existing) {
+    await env.DB.prepare(
+      `UPDATE members SET
+       score_memory = ?, score_adaptability = ?, score_discipline = ?,
+       score_asymmetry = ?, score_patience = ?, score_automation = ?, score_security = ?,
+       notes = 'Assessment submitted'
+       WHERE handle = ?`
+    ).bind(
+      dimension_scores.memory, dimension_scores.adaptability, dimension_scores.discipline,
+      dimension_scores.asymmetry, dimension_scores.patience, dimension_scores.automation,
+      dimension_scores.security, handle
+    ).run();
+  } else {
+    const memberId = crypto.randomUUID();
+    await env.DB.prepare(
+      `INSERT INTO members (id, name, email, handle, type, rank,
+       score_memory, score_adaptability, score_discipline, score_asymmetry,
+       score_patience, score_automation, score_security,
+       statement, applied_at)
+       VALUES (?, ?, ?, ?, ?, 'pending', ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))`
+    ).bind(
+      memberId, handle, contact || handle, handle, entity_type,
+      dimension_scores.memory, dimension_scores.adaptability, dimension_scores.discipline,
+      dimension_scores.asymmetry, dimension_scores.patience, dimension_scores.automation,
+      dimension_scores.security,
+      `DSI Assessment submission. Score: ${dsiToStore}.`
+    ).run();
+  }
+
+  return json({
+    status: 'received',
+    handle,
+    dsi: dsiToStore,
+    provisional_rank: provisionalRank,
+    keys_found: 4,
+    memory_gate: 'passed',
+    message: 'Your assessment has been received. The Order will review and assign your rank.',
+  });
 }
